@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <p>{{ prompt|safe }}</p>
+    </div>
+
+    <div>
+        <form method="post" {% if action %}action="{{ action }}"{% endif %} onsubmit="submit_once()">
+            {{ form.as_p }}
+            <p>
+                <input id="submit_id" type="submit" value='{{btn_name|default:"提交"}}'/>
+            </p>
+        </form>
+    </div>
+
+    <div>
+        {{ result|safe }}
+    </div>
+
+    <script type="text/javascript">
+    function submit_once(){
+        document.getElementById("submit_id").disabled=true;
+        return true;
+    }
+    </script>
+{% endblock %}

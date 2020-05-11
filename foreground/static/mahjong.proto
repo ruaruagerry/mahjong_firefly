@@ -1,0 +1,495 @@
+// 客户端请求注册 1001
+message UserRegReq {
+    optional string nick = 1;               // 用户昵称
+    optional string uuid = 2;               // 设备uuid
+    optional string sign = 3;               // 签名md5(secret|uuid|device_id)
+    optional string device_id = 4;          // 设备的唯一标识,从189版本开始加到sign里面一起验证
+    optional string mac_addr = 5;           // 废弃，可不带
+    optional string channel = 6;            // 渠道号
+    optional int32 version = 7;             // 版本号
+    optional string os = 8;                 // 终端操作系统
+    optional string res_md5 = 9;            // 用户处于哪个小版本 可不带
+    optional bool is_register = 10;         // 审核状态下生效，标识是审核状态下的登录和注册消息
+    optional string extra_username = 11;    // 审核状态下生效
+    optional string extra_password = 12;    // 审核状态下生效
+}
+
+
+// 客户端请求微信用户注册
+message WXUserRegReq {
+    optional string sign = 1;               // 签名md5(secret|openid|access_token|device_id)
+    optional string openid = 2;             // 微信 openid
+    optional string access_token = 3;       // access_token
+    optional string expire_date = 4;        // 过期时间
+    optional string channel = 5;            // channel
+    optional int32 version = 6;             // version
+    optional string os = 7;                 // 系统
+    optional string res_md5 = 8;
+    optional string device_id = 9;          // 设备的唯一标识,从189版本开始加到sign里面一起验证
+}
+
+
+//客户端请求登录
+message UserLoginReq {
+    optional int32 uin = 1;                 // user id
+    optional string key = 2;                // user password
+    optional int32 version =3;              // version
+    optional string channel =4;             // channel
+}
+
+//服务器注册和登录的统一响应 1001
+message LoginOrRegRsp {
+    optional int32 uin = 1;                             // user id
+    optional string key = 2;                            // user password
+    optional string nick = 3;                           // user nick
+    optional int32 sex = 4;                             // user sex
+    optional int32 old_deskid = 5;                      // 给断线重连用的
+    optional int32 account_bind_status =6;              // 帐号绑定状态. 是否绑定了微信号
+    optional string portrait = 7;                       // 头像url
+    optional string wx_public_id = 8;                   // 微信公众号
+    optional string wx_agent_id = 9;                    // 代理商号
+    optional string ip = 10;                            // 客户端IP
+    optional int32 room_card = 11;                      // 房卡
+    optional int32 ret = 12;                            // 登录注册响应值，先判断该标志位，为0代表是成功消息，成功状态下才取其它数值
+    optional string wy_yunxin_token = 13;               // 云信token
+    optional string hall_billband = 14;                 // 登录公告
+}
+
+message ExtraDeskTypeInfo{
+    optional bool hongzhong = 1;                        // 红中癞子
+    optional bool qidui = 2;                            // 可胡七对
+    optional int32 zhuaniao = 3;                        // 抓鸟  抓几鸟 一马平川
+    optional int32 piaofen = 4;                         // 飘分
+    optional bool shanghuo = 5;                         // 上火
+}
+
+//客户端请求进入牌桌 4001
+message GameEnterDeskReq {
+    optional int32 dst_desk_id = 1;                     // 目标deskid
+    optional int32 new_desk = 2;                        // 是否创建新桌子, 0：否；1：是
+    optional int32 reconnect = 3;                       // 断线重连的标识，0：否；1：是 
+    optional int32 card_num = 4;                        // 消耗房卡数
+    optional int32 desk_type = 5;                       // 1万载 4局 2转转 8局 
+    optional int32 seat_limit = 6;                      // 所开房间为几人桌
+    optional int32 win_type = 7;                        // 1点炮 2自摸
+    optional ExtraDeskTypeInfo extra_type = 8;          // 额外信息
+}
+message GameEnterDeskRsp {
+    optional int32 ret = 1;                             // 进桌响应，为0代表成功
+}
+
+//房卡变动通知 4002
+message UserRoomCardChange {
+    optional int32 room_card = 1;                       // 房卡变动时下发给客户端最新的用户房卡数
+    optional int32 change_reason = 2;                   // 房卡变动原因，1：邀请人玩游戏加房卡
+}
+
+message GameUserInfo {
+    optional int32 status = 1;                          // 1010未准备 1020已准备 1030玩游戏中 1001同意解散房间 1002拒绝解散房间
+    optional int32 uin = 2;                             // 用户id
+    optional string nick = 3;                           // 用户昵称
+    optional int32 seatid = 4;                          // 用户座位号
+    optional int32 sex = 5;                             // 用户性别
+    optional string portrait = 6;                       // 头像url
+    optional int32 is_master = 7;                       // 角色, 0:普通玩家；1:桌子创建人
+    optional int32 piaofen = 8;                         // 用户飘了多少分
+    optional int32 shanghuo = 9;                        // 是否选择了上火 1不上火 2上火
+    optional string ip = 10; 
+}
+
+message UserCommonCards {
+    optional int32 uin = 1;                             // 用户ID
+    optional int32 card_len = 2;                        // 用户手牌长度
+    repeated int32 out_cards = 3;                       // 用户吃、杠、碰后亮下去的手牌
+    repeated int32 discard = 4;                         // 用户出过的手牌
+    optional int32 seatid = 5;                          // 座位号
+    optional int32 status = 6;                          // 用户状态
+    repeated int32 op_list = 7;                         // 1吃 2碰 3暗杠 4擦杠 5明杠
+    optional int32 chips = 8;                           // 用户分数
+}
+
+message MyOption{
+    optional bool op_chi =1;                            // 是否可以吃牌，1为可以，0为不行
+    optional bool op_peng = 2;                          // 碰牌
+    optional bool op_gang = 3;                          // 杠牌
+    optional bool op_hu = 4;                            // 胡牌
+    optional bool need_wait = 5;                        // 是否需要等待，只有为false时以上操作才全部生效
+    repeated int32 chi_cards = 6;                       // 可以进行吃牌组合的牌
+}
+
+//服务器用户进入牌桌广播 7016
+message EvtDeskUserEnter {
+    optional int32 deskid=1;                            // 桌子id
+    optional int32 op_uin=2;                            // 进桌的用户id
+    optional int32 status=3;                            // status
+    optional int32 max_round=4;                         // 桌子最大局数，建桌的时候就定死了
+    repeated GameUserInfo users =5;                     // 进桌用户的基本信息
+    optional int32 next_uin=6;                          // 当前操作用户的id
+    optional int32 dealer_seatid=7;                     // 庄家的座位号
+    repeated int32 cards = 8[packed=true];              // 用户手牌
+    repeated UserCommonCards in_users = 9;              // 牌局用户的基本信息
+    optional int32 share_cards_len = 10;                // 公共牌长度
+    optional int32 game_round = 11;                     // 每一局内的第几轮
+    optional MyOption my_option = 12;                   // 自己可以进行的操作
+    optional int32 recv_card_uin = 13;                  // 叫牌的人是谁
+    optional int32 desk_remain_round = 14;              // 牌桌剩余局数
+    optional int32 seat_num = 15;                       // 这是几人桌
+    optional int32 remain_time = 16;                    // 解散牌桌投票剩余时长
+    optional int32 apply_uin = 17;                      // 发起投票人
+    optional int32 win_type = 18;                       // 1自摸 2点炮
+    optional ExtraDeskTypeInfo extra_type = 19;
+    optional int32 type = 20;                           // 桌子类型 1万载 2转转
+    optional int32 pre_remain_time = 21;                // 选择飘分上火剩余时长
+}
+
+//客户端请求退出牌桌 7003
+message GameExitDeskReq {
+    
+}
+message GameExitDeskRsp {
+    optional int32 ret = 1;                             
+}
+
+message DeskPlayInfo {
+    repeated int32 cards = 1[packed=true];              // 当前手牌
+    optional int32 card_len = 2;                        // 当前手牌长度
+    repeated int32 out_cards = 3[packed=true];          // 吃杠碰的牌
+    optional int32 out_card_len = 4;                    // 吃杠碰的牌的长度
+    repeated int32 discards = 5[packed=true];           // 出出去的牌
+    optional int32 status = 6;                          // 玩家的实时状态
+    optional int32 chips = 7;                           // 玩家的当前分数
+    optional int32 round_win_chips = 8;                 // 这一局赢下的分数
+    optional int32 total_chi_num = 9;                   // 所有局数内的吃牌操作次数
+    optional int32 total_peng_num = 10;                 // 所有局数内的碰牌操作次数
+    optional int32 total_gang_num = 11;                 // 所有局数内的杠牌操作次数
+    optional int32 total_ganged_num = 12;               // 所有局数内的被别人杠的次数
+    optional int32 total_hu_num = 13;                   // 所有局数内的胡牌次数
+    optional int32 total_hued_num = 14;                 // 所有局数内被别人胡的次数
+    optional int32 round_chi_num = 15;                  // 单局
+    optional int32 round_peng_num = 16;                
+    optional int32 round_gang_num = 17;
+    optional int32 round_ganged_num = 18;
+    optional int32 role = 19;                           // 用户角色，是否是状态
+}
+
+// 服务器用户退出广播 7017
+message EvtUserExit {
+    optional int32 deskid = 1; //desk id
+    optional int32 dealer = 2; // dealer id
+    optional int32 op_uin = 3;
+    optional int32 op_status = 4;
+    optional int32 next_uin = 5;
+    optional DeskPlayInfo play_info = 6;
+    optional int64 player_op_past_time = 7;
+    optional int32 dealer_seatid = 8;                   // dealer的座位号
+    optional int32 reason = 9;                          // 退桌原因
+}
+
+//客户端通知服务器立即开始游戏 7004
+message ClientNotifyStartGameReq {
+
+}
+message ClientNotifyStartGameRsp {
+    optional int32 ret = 1;
+}
+
+//出牌 7005
+message GameSendCardReq{
+    optional int32 card = 1;                            // 出哪张牌
+}
+message GameSendCardRsp{
+    optional int32 ret = 1;
+}
+
+//吃牌 7006
+message GameOptionChiReq{
+    optional int32 index = 1;                           // 吃哪一组牌
+}
+message GameOptionChiRsp{
+    optional int32 ret = 1;
+}
+
+//碰牌 7007
+message GameOptionPengReq{
+
+}
+message GameOptionPengRsp{
+    optional int32 ret = 1;
+}
+
+//杠牌 7008
+message GameOptionGangReq{
+
+}
+message GameOptionGangRsp{
+    optional int32 ret = 1;
+}
+
+//胡牌 7009
+message GameOptionHuReq{
+ 
+}
+message GameOptionHuRsp{
+    optional int32 ret = 1;
+}
+
+//可以吃杠碰胡操作时选择不操作，也即是过牌操作 7010
+message GameOptionPassReq{
+ 
+}
+message GameOptionPassRsp{
+    optional int32 ret = 1;
+}
+
+//客户端请求改变用户状态 7012
+message GamePlayerReadyReq{
+    //0 取消准备 1准备 2同意取消桌子 3拒绝取消桌子 4同意上火 5拒绝上火 6飘分分数 
+    optional int32 status = 1;
+    optional int32 piaofen = 2;
+}
+
+message UserStatus {
+    optional int32 uin = 1;                         // 用户ID
+    optional int32 status = 2;                      // 见status
+    optional int32 piaofen = 3;                     // 用户飘了多少分
+    optional int32 shanghuo = 4;                    // 是否选择了上火 1不上火 2上火
+}
+
+//服务器用户状态改变广播 7012
+message GamePlayerReadyEvt{
+    repeated UserStatus users = 1;
+    optional int32 pre_remain_time = 2;             // 选择飘分上火剩余时间
+    optional int32 deskid = 3;
+}
+
+//客户端主动请求杠牌（主要用于叫起来第四张牌后不第一时间选择杠牌，而是过了几手之后再杠牌，因为服务器当前只有第一时间杠牌的操作，所以第一时间没杠后续的判断就客户端来判断，然后主动发消息杠牌） 7013
+message GameOptionGangNotFirstReq{
+    optional int32 gang_card = 1;
+}
+message GameOptionGangNotFirstRsp{
+    optional int32 ret = 1;
+}
+
+//申请解散房间 7014
+message ApplyDeleteReq{
+
+}
+message ApplyDeleteEvt{
+    optional int32 apply_uin = 1;       //申请解散牌桌的人
+    optional int32 game_status = 2;     //牌桌游戏状态，0 未开始，1 已开始
+    optional int32 remain_time = 3;     // 投票剩余时长             
+    optional int32 status = 4;          // 牌桌状态  
+    optional int32 deskid = 5;
+}
+
+message UserOption {
+    optional int32 uin = 1;
+    optional int32 type = 2;            // 1吃 2碰 3暗杠 4擦杠 5明杠 6出牌
+}
+
+//服务器关于牌局内每次信息变化广播 7011
+message GameInfoEvt{
+    optional int32 deskid = 1;                  // desk id
+    optional int32 next_uin= 2;                 // 当前可进行操作的人
+    optional int32 max_round = 3;               // 桌子一共可以进行多少局牌
+    repeated int32 cards = 4[packed=true];      // 手牌
+    optional int32 dealer_seatid= 5;            // 庄家的座位号
+    repeated UserCommonCards users = 6; 
+    optional UserOption op_user = 7;            // 用户做的操作
+    optional int32 share_cards_len = 8;         // 公共牌长度
+    optional int32 game_round = 9;              // 一局牌内的第几轮
+    optional MyOption my_option = 10;           // 自己可以进行的操作
+    optional int32 status = 11;                 // 这里是桌子的状态
+    optional int32 recv_card_uin = 12;          // 桌子里面谁叫了牌
+    optional int32 desk_remain_round = 13;      // 牌桌剩余局数
+    optional int32 seat_num = 14;               // 这是几人桌
+}
+
+
+message GameOverResultInfo {
+    optional int32 uin = 1;
+    optional int64 chips = 2;
+    optional int32 round_chi_num = 3;
+    optional int32 round_peng_num = 4;
+    repeated int32 round_gang_list = 5;               // 1暗杠 2擦杠 3明杠
+    repeated int32 round_hu_list = 6;                 // 胡牌
+    repeated int32 round_win_list = 7;                // 1自摸 2接炮 3放炮
+    optional int32 total_chi_num = 8;
+    optional int32 total_peng_num = 9;
+    repeated int32 total_gang_list = 10;       
+    repeated int32 total_hu_list = 11;                // 总的胡牌列表
+    repeated int32 total_win_list = 12;
+    optional int32 status = 13;
+    optional int32 piaofen = 14;                      // -1无选择
+    optional int32 shanghuo = 15;                     // -1无选择 1不上火 2上火
+    optional int32 bird_num = 16;                     // 抓到多少张鸟
+    repeated int32 cards = 17;                       
+    repeated int32 out_cards = 18;
+    repeated int32 op_list = 19;                      // 结束时做了什么操作
+    optional int32 round_win_chips = 20;
+    //0-5 暗杠 被暗杠 擦杠 被擦杠 明杠 点杠 6-23自摸 24-41被自摸 42-59接炮 60-77放炮
+    repeated int32 over_chips_details = 21;
+    optional int32 round_win_chips_before = 22;
+}
+
+// 服务器游戏结束通知 7015
+message EvtGameOver {
+    repeated int32 winners=1[packed=true];               // winners
+    repeated GameOverResultInfo result = 2;
+    optional int32 deskid = 3;              
+    optional int32 status = 4;                           // 牌桌状态
+    optional int32 remain_round_num = 5;                 // 牌桌剩余局数
+    repeated int32 bird_card = 6[packed=true];           // 抓鸟抓到了什么牌
+    optional int32 type = 7;                             // 桌子类型，万载还是转转
+    optional int32 seat_limit = 8;                       // 座位限制
+    optional int32 win_type = 9;                         // 1点炮 2自摸                     
+    optional ExtraDeskTypeInfo extra_type = 10;
+    optional bool last_round = 11;                       // True代表总结算 
+    optional int32 over_time = 12;                       // 牌局结束时间
+    optional int32 over_reason = 13;                     // 牌局结束原因
+}
+
+message RecordInfo {
+    optional int32 uin = 1;
+    optional int32 role = 2;
+    optional int64 chips = 3;
+    optional int32 round_win_chips = 4;
+    optional int32 round_chi_num = 5;
+    optional int32 round_peng_num = 6;
+    repeated int32 round_gang_list = 7;               // 1暗杠 2擦杠 3明杠
+    repeated int32 round_hu_list = 8;                 // 胡牌
+    repeated int32 round_win_list = 9;                // 1自摸 2接炮 3放炮
+    optional int32 total_chi_num = 10;
+    optional int32 total_peng_num = 11;
+    repeated int32 total_gang_list = 12;       
+    repeated int32 total_hu_list = 13;                // 总的胡牌列表
+    repeated int32 total_win_list = 14;
+    optional int32 piaofen = 15;                     // -1无选择
+    optional int32 shanghuo = 16;                    // -1无选择 1不上火 2上火
+    optional int32 bird_num = 17;                    // 抓到多少张鸟
+    repeated int32 cards = 18;                       
+    repeated int32 out_cards = 19;
+    repeated int32 op_list = 20;
+    //0-5 暗杠 被暗杠 擦杠 被擦杠 明杠 点杠 6-23自摸 24-41被自摸 42-59接炮 60-77放炮
+    repeated int32 over_chips_details = 21;
+    optional int32 round_win_chips_before = 22;
+    optional string nick = 23;
+    optional int32 seatid = 24;
+    optional int32 sex = 25;
+    optional string portrait = 26;                  // 头像url
+}
+
+message PerPlayRecord {
+    optional string roundid = 1;
+    repeated RecordInfo result = 2;
+    optional int32 deskid = 3;
+    optional int32 game_round = 4;                 // 牌桌当前局数
+    optional int32 desk_round = 6;                 // 牌桌总局数
+    repeated int32 bird_card = 7[packed=true];
+    optional int32 type = 8;
+    optional int32 seat_limit = 9;
+    optional int32 win_type = 10;                        // 1点炮 2自摸                     
+    optional ExtraDeskTypeInfo extra_type = 11;
+    optional int32 over_time = 12;
+    optional int32 master_uin = 13;
+    repeated int32 winners = 14[packed=true];
+}
+
+// 客户端请求牌局记录列表 10001
+message MyPlayRecordListReq {
+    
+}
+message MyPlayRecordListRsp {               // 
+    repeated PerPlayRecord record_list = 1;
+    optional int32 ret = 2;
+}
+
+// 客户端请求牌局记录详情 10002
+message RoundPlayRecordsReq {               // 请求牌局记录详情
+    optional string round_id = 1;           // 牌局ID
+    optional int32 game_round_index = 2;    // 具体到哪一局
+}
+message RoundPlayRecordsRsp {
+    repeated PerPlayRecord record_list = 1;
+    optional int32 ret = 2;
+}
+
+
+// 台桌内聊天（文字聊天也留着） cmd:10003
+message DeskChatReq {
+    optional string content = 1; // content of the chat
+    optional int32 type = 2;  // 1文字聊天 2语音聊天，语音聊天带上发送的语句索引
+    optional int32 index = 3;  // 语音语句索引 按照发言语句顺序从1开始往后算，不能为0
+}
+message DeskChatEvt {
+    optional int32 ret = 1;
+    optional int32 op_uin = 2;
+    optional bool sex = 3;
+    optional int32 index = 4;
+    optional string content = 5;
+}
+
+
+//注销登录
+message LogOutReq {
+}
+message LogOutRsp {
+}
+
+
+// 系统广播
+message EvtBroadCast {
+    optional int32 uin = 1;                               // 发送人，系统广播时uin为1
+    optional string content = 2;                          // content，广播内容
+    optional string nick = 3;                             // 发送人昵称
+}
+
+// 充值通知
+message UserCreatePreBill {
+    optional int32 uin = 1 ;
+    optional string name = 2 ; // 购买的物品id
+    optional string item_id = 3;  // 订单号
+}
+
+message CreateFormalBill {
+    optional int32 uin = 1;
+    optional string item_id = 2; // 订单号
+}
+
+
+// 设置邀请人，只有邀请人为空的情况才能成功
+message SetInviteUserReq {
+    optional int32 uin = 1;
+}
+
+message SetInviteUserRsp {
+    optional int32 ret = 1;
+}
+
+
+//心跳 cmd 1
+message HeartBeatReq{
+
+} 
+
+message HeartBeatRsp{
+    
+}
+
+
+//test
+message ws_msg{
+    optional int32 ms_op_int = 1;
+}
+
+message WsProtoTest{
+    optional int32 op_int = 1;
+    repeated int32 re_int = 2[packed=true];
+    optional string op_str = 3;
+    optional ws_msg op_msg = 4;
+    repeated ws_msg re_msg = 5;
+}
+
+
+
+

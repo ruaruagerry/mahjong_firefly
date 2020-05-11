@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <form id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input id="file" type="file" name="file" > 上传文件:
+            <input type="radio" name="ostype" value="code" />code
+            <input type="radio" name="ostype" value="resource" />resource
+            <button id="upload" type="button" style="margin:20px">上传</button>
+    </form>
+
+<script>
+    $("#upload").click(function(){
+    // alert(new FormData($('#uploadForm')[0]));
+    var ostype = $('input:radio:checked').val()
+    if (ostype == undefined){
+      alert('请选择上传的文件类型');
+    }
+     //获取单选按钮的值
+    $.ajax({
+            //url: 'http://mahjong.wzdexian.com/background/update',
+            type: 'POST',
+            // data:$('#uploadForm').serialize(),
+            data:new FormData($('#uploadForm')[0]),
+            processData : false,
+            contentType : false, //必须false才会自动加上正确的Content-Type
+            // cache: false,
+            success:function(response,stutas,xhr){
+              // parent.location.reload();
+              //window.location.reload();
+              // alert(stutas);
+              alert(response);
+            },
+            //error:function(xhr,errorText,errorStatus){
+            //   alert(xhr.status+' error: '+xhr.statusText);
+            //}
+            timeout:6000
+        });
+
+  });
+</script>
+{% endblock %}
+
+
+
+		

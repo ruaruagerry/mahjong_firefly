@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <h1>
+            根据桌子类型分类的在线人数：
+        </h1>
+        <table border="T2">
+            <thead>
+            <tr>
+                <th>桌子类型</th>
+                <th>人数</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for type, num in type_items %}
+            <tr>
+                <td>{{ type }}</td>
+                <td>{{ num }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <h1>大厅在线人数：</h1>
+        <p>{{ hall_online }}</p>
+        <h1>桌子在线人数：</h1>
+        <p>{{ desk_online }}</p>
+    </div>
+{% endblock %}

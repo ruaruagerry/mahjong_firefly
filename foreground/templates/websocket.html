@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<script src="static/lib/Long.min.js"></script>         <!-- https://raw.github.com/dcodeIO/Long.js/master/dist/Long.min.js -->
+<script src="static/lib/ByteBufferAB.min.js"></script> <!-- https://raw.github.com/dcodeIO/ByteBuffer.js/master/dist/ByteBufferAB.min.js -->
+<script src="static/lib/ProtoBuf.min.js"></script>     <!-- https://raw.github.com/dcodeIO/ProtoBuf.js/master/dist/ProtoBuf.min.js -->
+
+<!-- proto格式如下
+
+------------------------------------------------------------------------------
+Wraning:注意使用该方法时，message必须写在外面，不能内嵌到另一个message中，否则会有问题
+------------------------------------------------------------------------------
+
+//test
+message ws_msg{
+    optional int32 ms_op_int = 1;
+}
+
+message WsProtoTest{
+    optional int32 op_int = 1;
+    repeated int32 re_int = 2[packed=true];
+    optional string op_str = 3;
+    optional ws_msg op_msg = 4;
+    repeated ws_msg re_msg = 5;
+}
+
+-->
+
+<html>
+    <head>
+    </head>
+    <body>
+        <button onclick='connect();'>连接服务器</button>
+        <button onclick='disconnect();'>断开连接</button>
+        <div>
+            <input type="number" id="command" name="command" value="1002" required>
+            <input type="text" id="content" name="content" value="" placeholder="消息内容" required>
+            <button onclick='sendMessage();'>发送消息</button>
+        </div>
+        <div id="console"></div>
+        <script type="text/javascript" charset="UTF-8">
+        if (typeof dcodeIO === 'undefined' || !dcodeIO.ProtoBuf) {
+            throw(new Error("ProtoBuf.js is not present. Please see www/index.html for manual setup instructions."));
+        }
+
+        var socket = null;
+        var isOpen = false;
+        var $ = function(el){return document.querySelector(el)};
+        var log = function(msg){
+            var p = document.createElement("p");
+            p.appendChild(document.createTextNode(msg));
+            $("#console").appendChild(p);
+        };
+        var connect = function() {
+            if( isOpen && socket ){
+                return;
+            }
+            socket = new WebSocket("ws://mahjong.wzdexian.com:21000");
+            socket.bufferBlob = new Blob();
+            socket.binaryType = "arraybuffer";
+            socket.onopen = function() {
+                log("Connected!");
+                isOpen = true;
+            };
+
+            // 接收服务器返回的消息
+            socket.onmessage = function(e) {
+                var _this = this;
+                var buf = e.data;
+                // 创建读取对象
+                var blobRead = new FileReader();
+                // 将本次获取到的数据与之前剩余的数据合并
+                _this.bufferBlob = new Blob([_this.bufferBlob, buf]);
+                // 读取数据成功后调用
+                blobRead.onload = function(e){
+                    ParseArrayBuffer(e.target.result);
+                };
+                // 将Blob对象的数据读取为ArrayBuffer
+                blobRead.readAsArrayBuffer(_this.bufferBlob);
+
+                // 解析消息数据
+                function ParseArrayBuffer(buf){
+                    // 解析消息头
+                    var head = ParseBufferHead(buf.slice(0, 8));
+                    if( ! head.status ){
+                        // 数据异常
+                        console.log("illegal data package --", head.error);
+                        return
+                    }
+                    var command = head['command'];
+                    var length = head['length'];
+                    var dataLen = 8 + length;
+                    // var request = new Blob([buf.slice(8, dataLen)]);
+                    var request = new Blob([buf.slice(8, dataLen)]);
+                    var fa = new FileReader();
+                    // String blobString = new String(request.getBytes(1, request.byteLength));
+                    // console.log(blobString)
+
+                    if( request.size < length ){
+                        // 数据包不完整, 留待后续处理
+                        console.log(command, "Data is not complete, waiting for the data ...");
+                        return;
+                    }
+                    // 开始解析字符串数据，到这里包肯定是完整的
+                    _this.bufferBlob = new Blob([buf.slice(dataLen)]);
+                    var ProtoBuf = dcodeIO.ProtoBuf;
+                    var date_test = ProtoBuf.loadProtoFile("/static/mahjong.proto").build("EvtDeskUserEnter");
+
+                    obj = ab2str(buf.slice(8, dataLen))
+                    console.log(obj)
+                    obj = obj.substring(1,obj.length-1);
+                    obj = obj.split(",");
+                    body = (obj[0].split(":"))[1]
+                    ret = (obj[1].split(":"))[1]
+                    console.log(ret, body)
+                    console.log(date_test.decode(str2ab(body)))
+
+
+                    // fa.readAsText(request)
+                    // fa.onload = function (e) {
+                      // obj = e.target.result;
+                      // body = (new Function("return " + obj))();
+                      // obj_ret = body.ret
+                      // obj_body = body.body
+                      // console.log(obj_ret, obj_body)
+                      // console.log(date_test.decode(str2ab(obj_body)))
+                      // obj = obj.substring(1,obj.length-1);
+                      // obj = obj.split(",");
+                      // body = (obj[0].split(":"))[1]
+                      // ret = (obj[1].split(":"))[1]
+                      // console.log(char2buf(body))
+                      // var obj_body_blob = new Blob([body], {
+                        // type: 'text/plain'
+                      // });
+                      // var obj_body_blob = new Blob([body])
+                      // fb = new FileReader()
+                      // fb.readAsArrayBuffer(obj_body_blob);
+                      // fb.onload = function (e) {
+                        // console.log(e.target.result)
+                        // result = date_test.decode(e.target.result)
+                        // console.log(result)
+                      // };
+                      // var re_blob = buf.slice(8, dataLen);
+                      // var result = date_test.decode(re_blob)
+                      // console.log(recv_msg)
+                      // console.log(blobString)
+                        // 获得最终数据
+                      // log("Receiver Message, command: "+command+", data: "+ recv_msg);
+                    // };
+                    var f = new FileReader(request)
+                    f.readAsText(request);
+                    if( _this.bufferBlob.size ){
+                        // 如果有粘包, 则继续解析消息数据
+                        blobRead.readAsArrayBuffer(_this.bufferBlob);
+                    }
+                }
+
+                // 解析消息头
+                function ParseBufferHead(buf){
+                    var result = {};
+                    try {
+                        // 创建ArrayBuffer的视图对象
+                        var head = new DataView(buf);
+                        result = {
+                            status: true,
+                            length: head.getUint32(0),
+                            command: head.getUint32(4)
+                        };
+                    }catch (e){
+                        result = {
+                            status: false,
+                            error: e.message
+                        }
+                    }
+                    return result;
+                }
+
+                function encode_utf8(s) {
+                  return unescape(encodeURIComponent(s));
+                }
+
+                function decode_utf8(s) {
+                  return decodeURIComponent(escape(s));
+                }
+
+                 function ab2str(buf) {
+                   var s = String.fromCharCode.apply(null, new Uint8Array(buf));
+                   return decode_utf8(decode_utf8(s))
+                 }
+
+                function str2ab(str) {
+                   var s = encode_utf8(str)
+                   var buf = new ArrayBuffer(s.length); 
+                   var bufView = new Uint8Array(buf);
+                   for (var i=0, strLen=s.length; i<strLen; i++) {
+                     bufView[i] = s.charCodeAt(i);
+                   }
+                   return bufView;
+                 }
+            };
+            socket.onclose = function(e) {
+                log("Connection closed.");
+                socket = null;
+                isOpen = false;
+            }
+        };
+        var disconnect = function(){
+            if( isOpen && socket ){
+                socket.close();
+            }
+        };
+
+        // proto发送
+        var sendMessage = function() {
+            if (isOpen) {
+
+                // 创建ProtoBuf Struct
+                var ProtoBuf = dcodeIO.ProtoBuf;
+                var date_test = ProtoBuf.loadProtoFile("/static/mahjong.proto").build("WsProtoTest");
+                var date_test_tmp = new date_test();
+
+                var date_test_msg = ProtoBuf.loadProtoFile("/static/mahjong.proto").build("ws_msg");
+                var date_test_msg_tmp = new date_test_msg()
+                date_test_msg_tmp.setMsOpInt(2222)
+
+                /*
+                option int就直接赋值int
+                option string就直接赋值string
+                repeated int就直接new Array(1,1,1,1)
+                repeated message就先build出对应的message再new Array()
+                */
+
+                // optional int apply_uin
+                date_test_tmp.setOpInt(1111);
+                date_test_tmp.setReInt(new Array(1,2,3,4,5));
+                date_test_tmp.setOpStr("string");
+                date_test_tmp.setOpMsg(date_test_msg_tmp);
+                date_test_tmp.setReMsg(new Array(date_test_msg_tmp, date_test_msg_tmp, date_test_msg_tmp));
+
+                var command = parseInt($("#command").value);
+                if( isNaN(command) ){
+                    alert("协议号只能为整数");
+                    return;
+                }
+                var msg = {data: $("#content").value};
+                var str = JSON.stringify(msg);
+                // 将中文字符串转换为unicode字符, 避免无法写入二进制数据的问题
+                str = str.replace(/[^\u0000-\u00FF]/g, function($0){
+                    return escape($0).replace(/(%u)(\w{4})/gi,"\\u$2");
+                });
+
+                //var body = new Blob(date_test_tmp);
+                var body = date_test_tmp.toArrayBuffer();
+                var length = date_test_tmp.toArrayBuffer().byteLength;
+                log("body:"+body+", length:"+length);
+
+                // 创建协议头数据
+                var head = new DataView(new ArrayBuffer(8));
+                head.setUint32(0, length);
+                head.setUint32(4, command);
+
+                // 将Blob转化为ArrayBuffer
+                var f = new FileReader();
+                f.onload = function(e){
+                    // 发送二进制消息
+                    socket.send(e.target.result);
+                    log("Send Message, command: "+command+", data: " + body);
+                };
+                // 将Blob大二进制对象读取为ArrayBuff
+                f.readAsArrayBuffer(new Blob([head, body]));
+            } else {
+                log("Connection not opened.");
+            }
+        };
+        window.onload = connect;
+        </script>
+    </body>
+</html>

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block extrastyle %}
+
+    <!-- Bootstrap -->
+    <!--<link href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">-->
+    <!--<link href="http://cdn.bootcss.com/bootstrap-datetimepicker/4.14.30/css/bootstrap-datetimepicker.min.css" rel="stylesheet">-->
+    <!--<link href="http://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>-->
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid">
+
+      <div class="row">
+        <div class="col-md-12">
+
+          <p>
+            <h3>牌桌列表</h3>
+			<button type="button" class="btn btn-default"
+                    onclick="window.location.href='{% url 'query_active_desks' %}'"
+            >刷新列表</button>
+          </p>
+		  	
+			  
+		  <h4>万载场</h4>
+		  <table class="table table-bordered" style="text-align:center;" width="960px">
+			<thead>
+			  <tr>
+				<td width="500px">桌子详情</td>
+                <td width="460px">桌子监控</td>
+			  </tr>
+			</thead>
+
+			<tbody>
+			  {% for desk in desk_list %}
+			  {% if desk.type == 1 %}
+			  <tr>
+                    <td width="500px"><a href="{% url 'desk_query' %}?desk_id={{ desk.id }}" target="_blank"
+                         class="btn btn-default btn-xs">{{ desk.id }}</a></td>
+                  <td width="460px"><a href="{% url 'desk_card_info' %}?desk_id={{ desk.id }}" target="_blank"
+					 class="btn btn-default btn-xs">{{ desk.id }}</a></td>
+			  </tr>
+			  {% endif %}
+			  {% endfor %}
+			</tbody>
+		  </table>
+
+          <h4>转转场</h4>
+          <table class="table table-bordered" style="text-align:center;" width="960px">
+          <thead>
+            <tr>
+                <td width="500px">桌子详情</td>
+                <td width="460px">桌子监控</td>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for desk in desk_list %}
+            {% if desk.type == 2 %}
+            <tr>
+                <td width="500px"><a href="{% url 'desk_query' %}?desk_id={{ desk.id }}" target="_blank"
+                   class="btn btn-default btn-xs">{{ desk.id }}</a></td>
+                <td width="460px"><a href="{% url 'desk_card_info' %}?desk_id={{ desk.id }}" target="_blank"
+               class="btn btn-default btn-xs">{{ desk.id }}</a></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+          </table>
+			  
+		  
+        </div>
+      </div>
+    </div>
+{% endblock %}

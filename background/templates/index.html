@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+
+                <div class="panel panel-info">
+                    <div class="panel-heading">数据查询</div>
+                    <div class="list-group">
+                        <a class="list-group-item" href="{% url 'background.views.desk_query' %}">查询牌桌信息</a>
+                        <a class="list-group-item" href="{% url 'background.views.online_users' %}">查看在线用户数</a>
+                        <a class="list-group-item" href="{% url 'background.views.query_active_desks' %}">查询在线桌子</a>
+                        <a class="list-group-item" href="{% url 'background.views.desk_card_info' %}">牌桌监控</a>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-sm-4">
+
+                <div class="panel panel-danger">
+                    <div class="panel-heading">后台控制</div>
+
+                    <div class="list-group">
+                        <a class="list-group-item" href="{% url 'background.views.modify_room_card' %}">修改用户房卡</a>
+                        <a class="list-group-item" href="{% url 'background.views.set_system_announcement' %}">设置系统公告</a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        </div>
+
+{% endblock %}

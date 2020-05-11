@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+    <div>
+        <form method="get">
+            {{ form.as_p }}
+            <p>
+                <input type="submit" value="提交"/>
+            </p>
+        </form>
+    </div>
+
+    <div>{{ result }}</div>
+
+    {% if share_cards_list or card_list%}
+    <table border="T2">
+        <tbody>
+        <tr>
+            <td>公共牌</td>
+            <td>
+                {% for card in share_cards_list %}
+                <td>{{card}}</td>
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            {% if is_send_card %}
+            <td>{{current_uin}}出牌：{{extend_card}}</td>
+            {% else %}
+            <td>{{current_uin}}叫牌：{{extend_card}}</td>
+            {% endif %}
+        </tr>
+        {% for cc in card_list %}
+        <tr>
+            <td>{{cc.belong}}</td>
+            <tr>
+                <td>手牌</td>
+                <td>
+                    {% for card in cc.cards %}
+                    <td>{{card}}</td>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td>摊牌</td>
+                <td>
+                    {% for card in cc.out_cards %}
+                    <td>{{card}}</td>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td>已做的操作</td>
+                <td>
+                    {% for op in cc.op_list %}
+                    <td>
+                    {% if op == 1 %}
+                    吃
+                    {% elif op == 2 %}
+                    碰
+                    {% elif op == 3 %}
+                    暗杠
+                    {% elif op == 4 %}
+                    擦杠
+                    {% elif op == 5 %}
+                    明杠
+                    {% endif %}
+                    </td>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td>当前可做的操作</td>
+                {% if cc.op_type %}
+                <td>
+                    {% if cc.op_type.0 %}
+                    <td>
+                    吃
+                    </td>
+                    {% endif %}
+                    {% if cc.op_type.1 %}
+                    <td>
+                    碰
+                    </td>
+                    {% endif %}
+                    {% if cc.op_type.2 %}
+                    <td>
+                        {% if cc.op_type.3 == 1 %}
+                        暗杠
+                        {% elif cc.op_type.3 == 2 %}
+                        擦杠
+                        {% elif cc.op_type.3 == 3 %}
+                        明杠
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    {% if cc.op_type.3 %}
+                    <td>
+                    胡
+                    </td>
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>丢牌</td>
+                <td>
+                    {% for card in cc.dis_cards %}
+                    <td>{{card}}</td>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+{% endblock %}
